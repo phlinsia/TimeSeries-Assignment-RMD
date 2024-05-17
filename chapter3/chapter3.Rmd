@@ -1,0 +1,471 @@
+---
+title: "时间序列分析第三章作业"
+author: "Phlinsia"
+date: "2024年3月25日"
+CJKmainfont: SimSun
+output:
+  bookdown::pdf_document2:
+    includes:
+        header-includes:
+          - \usepackage{xeCJK}
+          - \usepackage{subfig}
+          - \usepackage{subcaption}
+        keep_tex: yes
+    latex_engine: xelatex
+---
+
+```{r setup, echo=FALSE,include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=8, fig.height=3)
+library(showtext)
+font_families()
+showtext_auto()
+library(devtools)
+library(lattice)
+library(latticeExtra)
+library(gridExtra)
+library(TSA)
+library(pander)
+library(zoo)
+library(xts)
+set.seed(1234)
+```
+
+## 3.4 平均工作时间
+### a {-}
+```{r, fig.cap="美国制造业每周平均工作时间的月度数值"}
+library(TSA)
+data("hours")
+xyplot(hours,xlab="时间")
+```
+
+在图1中，可见83年到84年间有急剧增长。此外，存在季节性趋势：一般来说，后半年的工作时间较长，除了夏季；不过84年并没有明显的模式。
+
+### b {-}
+
+```{r, fig.cap="每周平均工作时间的月度数值（标注月份）"}
+months <- c("J", "A", "S", "O", "N", "D", "J", "F", "M", "A", "M", "J")
+
+xyplot(hours, panel = function(x, y, ...) {
+  panel.xyplot(x, y, ...)
+  panel.text(x = x, y = y, labels = months)
+}, xlab = "时间")
+```
+
+在图2中，我们的解释基本相同。12月是每周工作时间最长的月份，而2月和1月是最短的，趋势显而易见。
+
+## 3.5 工资
+
+### a {-}
+
+```{r, fig.cap="美国服装和纺织业工人每月平均小时工资。"}
+data("wages")
+xyplot(wages, panel = function(x, y, ...) {
+  panel.xyplot(x, y, ...)
+  panel.text(x, y, labels = months)
+}, xlab = "时间")
+```
+
+工资呈现出一个季节性的正向趋势：8月是工资的低谷。
+一般来说，秋季的增长似乎更大。
+
+### b {-}
+
+```{r}
+wages_fit1 <- lm(wages ~ time(wages))
+summary(wages_fit1)
+wages_rst <- rstudent(wages_fit1)
+```
+
+### c {-}
+
+```{r wages-resid, fig.cap="残差图"}
+xyplot(wages_rst ~ time(wages_rst), type = "l",
+       xlab = "时间", ylab = "学生化残差")
+```
+
+此时似乎仍然存在与时间相关的自相关性，而不是白噪声。
+
+### d {-}
+
+```{r}
+wages_fit2 <- lm(wages ~ time(wages) + I(time(wages)^2))
+summary(wages_fit2)
+wages_rst2 <- rstudent(wages_fit2)
+```
+
+### e {-}
+
+```{r wages_quad_resid, fig.cap="我们二次模型的残差图"}
+xyplot(wages_rst2 ~ time(wages_rst), type = "l",
+       xlab = "时间", ylab = "学生化残差")
+```
+
+像随机噪声，但拟合残差之间的自相关性仍清晰，这是我们尚未在模型中捕捉到的。
+
+
+## 3.6 啤酒销售
+
+### a {-}
+
+```{r, fig.cap = "美国啤酒月销售额。"}
+data(beersales)
+xyplot(beersales,xlab="时间")
+```
+
+清晰的季节性趋势。75年到81年左右有个初始的正向趋势，然后趋于稳定。
+
+### b {-}
+
+```{r, fig.cap = "带有月份首字母标注的美国啤酒月销售额。"}
+months <- c("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
+
+xyplot(beersales,
+       panel = function(x, y, ...) {
+         panel.xyplot(x, y, ...)
+         panel.text(x, y, labels = months)
+       },xlab="时间")
+```
+
+明显可见销售高峰在暖和的月份，而秋冬季则低迷。12月特别低，而5月、6月和7月似乎是高峰期。
+
+### c {-}
+
+```{r}
+beer_fit1 <- lm(beersales ~ season(beersales))
+pander(summary(beer_fit1))
+```
+
+所有比较都是相对1月份来的。这个模型解释了大约0.71的方差，并且在统计上显著。大多数因素都显著（主要是冬季月份，如预期所示）。
+
+### d {-}
+
+```{r rst-beer, fig.cap="啤酒销售残差图。"}
+xyplot(rstudent(beer_fit1) ~ time(beersales), type = "l",
+       xlab = "时间", ylab = "学生化残差",
+       panel = function(x, y, ...) {
+         panel.xyplot(x, y, ...)
+         panel.xyplot(x, y, pch = as.vector(season(beersales)), col = 1)
+       })
+```
+
+观察残差图，在 \@ref(fig:rst-beer) 中我们没能很好地拟合数据；我们没捕捉到长期趋势。
+
+### e {-}
+
+```{r}
+beer_fit2 <- lm(beersales ~ season(beersales) + time(beersales) +
+                  I(time(beersales) ^ 2))
+pander(summary(beer_fit2))
+```
+
+这个模型更好地拟合了数据，解释了大约0.91的方差。
+
+### f {-}
+
+```{r rst-beer2, fig.cap="二次拟合的啤酒销售残差图。"}
+xyplot(rstudent(beer_fit2) ~ time(beersales), type = "l",
+       xlab = "时间", yla = "学生化残差",
+       panel = function(x, y, ...) {
+         panel.xyplot(x, y, ...)
+         panel.xyplot(x, y, pch = as.vector(season(beersales)), col = 1)
+       })
+```
+
+许多值仍无法成功预测，但我们现在能更好地建模长期趋势。
+
+## 3.7 温尼贝戈房车销售数据分析
+
+### a {-}
+
+```{r winnebago, fig.cap = "温尼贝戈房车每月单位销售量图。"}
+data(winnebago)
+xyplot(winnebago,xlab="时间")
+```
+
+### b {-}
+
+```{r}
+winn_fit1 <- lm(winnebago ~ time(winnebago))
+pander(summary(winn_fit1))
+```
+
+该模型具有显著性，并解释了0.69的方差。
+
+```{r winnebago-lm-res, fig.cap = "温尼贝戈房车数据线性拟合残差图。"}
+xyplot(rstudent(winn_fit1) ~ time(winnebago), type = "l",
+       xlab = "时间", ylab = "学生化残差")
+```
+
+该拟合效果较差（图\@ref(fig:winnebago-lm-res)）。残差分布并非随机，并且明显看出对于后期年份我们的预测准确性更差。
+
+### c {-}
+
+为了更好拟合，我们对结果变量采用自然对数变换。
+
+```{r}
+winn_fit_log <- lm(log(winnebago) ~ time(winnebago))
+pander(summary(winn_fit_log))
+```
+
+变换后模型改善，解释了近0.8的方差。
+
+### d {-}
+
+```{r winnebago-log-res, fig.cap = "自然对数变换后的残差图。"}
+xyplot(rstudent(winn_fit_log) ~ time(winnebago), type = "l",
+       xlab = "时间", ylab = "学生化残差",
+       panel = function(x, y, ...) {
+         panel.xyplot(x, y, ...)
+         panel.xyplot(x, y, pch = as.vector(season(winnebago)), col = 1)
+       })
+```
+
+此图看起来更像是随机噪声（图\@ref(fig:winnebago-log-res)）。尽管某些月份的值仍有些聚集，但比线性模型已经有了明显的改进。不过我们仍然系统性地高估了某些月份的数值。
+
+### e {-}
+
+```{r}
+winn_fit_seasonal <- lm(log(winnebago) ~ season(winnebago) + time(winnebago))
+pander(summary(winn_fit_seasonal))
+```
+
+通过加入季节性因素进一步提高了模型的拟合度。$R^2$ 达到0.89，季节性均值以及时间趋势的显著性检验也大多通过。
+
+### f {-}
+
+```{r winnebago-seasonal-res}
+xyplot(rstudent(winn_fit_seasonal) ~ time(winnebago), type = "l",
+       xlab = "时间", ylab = "学生化残差",
+       panel = function(x, y, ...) {
+         panel.xyplot(x, y, ...)
+         panel.xyplot(x, y, col = 1, pch = as.vector(season(winnebago)))
+       })
+```
+
+虽然在时间序列开始时某些残差较大，但总体来说模型可以接受（图\@ref(fig:winnebago-seasonal-res)）。
+
+
+
+
+
+
+
+## 3.10 重新探讨工作时间
+
+### a {-}
+
+```{r hours_quad}
+data(hours)
+hours_quad <- lm(hours ~ time(hours) + I(time(hours)^2))
+pander(summary(hours_quad))
+```
+
+线性和二次趋势均显著。我们解释了总方差的59%。
+
+### b {-}
+
+```{r hours-quad-res, fig.cap = "对小时数序列二次拟合的学生化残差图"}
+xyplot(rstudent(hours_quad) ~ seq_along(hours), type = "l",
+       xlab = "指数", ylab = "学生化残差",
+       panel = function(x, y, ...) {
+         panel.xyplot(x, y, ...)
+         panel.xyplot(x, y, pch = as.vector(season(hours)), col = 1)
+       })
+```
+
+此处明显遗漏了季节趋势。例如，低估了2月，高估了12月。
+
+### c {-}
+
+我们运行**游程检验**来检查观察值间的依赖关系。
+
+```{r}
+runs(rstudent(hours_quad))
+```
+
+我们的游程数量多于预期，且在$p = 0.00012$水平上具有显著性检验结果，证实了我们在(b)部分的猜想。
+
+### d {-}
+
+我写的`lat_acf`是一个用于绘制自相关函数（ACF）图的自定义函数，并利用了`TSA`包中的`acf`函数和`lattice`包中的`xyplot`函数。
+
+```{r lat_acf}
+lat_acf <- function(x, ci = 0.95, drop.lag.0 = FALSE, ...) {
+  s <- TSA::acf(x, drop.lag.0 = drop.lag.0, plot = FALSE, ...)
+
+  nser <- ncol(s$lag)
+
+  clim0 <- qnorm((1 + ci) / 2) / sqrt(s$n.used)
+
+  ylim <- range(s$acf[, 1L:nser, 1L:nser], na.rm = TRUE)
+  ylim <- range(c(-clim0, clim0, ylim))
+
+
+  lattice::xyplot(s$acf ~ s$lag, type = "h", xlab = "滞后", ylab = "自相关函数",
+                  ylim = ylim * 1.1,
+                  panel = function(x, y, ...) {
+                    panel.abline(h = c(-clim0, 0, clim0), lty = c(3, 1, 3))
+                    panel.xyplot(x, y, ...)
+                  })
+}
+```
+
+```{r hours-acf, fig.cap = "小时数数据集的自相关图"}
+lat_acf(rstudent(hours_quad))
+```
+
+图 \@ref(fig:hours-acf) 明确显示了自相关性：前5至6个值之间存在正相关性，之后似乎变为负相关。其中一些值具有显著性。
+
+### e {-}
+
+```{r normality-test1, fig.height=3,fig.cap="正态性检验图"}
+figa<-qqmath(rstudent(hours_quad), asp = 1,
+        xlab = "理论值", ylab = "学生化残差",
+        panel = function(x, ...) {
+          panel.qqmathline(x, ...)
+          panel.qqmath(x, ...)
+        })
+figb<-densityplot(rstudent(hours_quad), xlab = "学生化残差", 
+             ylab = "密度")
+gridExtra::grid.arrange(figa, figb, ncol = 2)
+```
+
+分布呈现出轻尾特征，但除此之外看起来相当接近正态分布。
+
+## 3.11 重新探讨工资
+
+### a {-}
+
+```{r}
+wages_quad <- lm(wages ~ time(wages) + I(time(wages)^2))
+pander(summary(wages_quad))
+```
+
+这个二次拟合解释了大量的方差（0.99）。
+
+### b {-}
+
+```{r}
+runs(rstudent(wages_quad))
+```
+
+然而，从游程检验的结果可以看出，变量之间存在相互依赖的证据。
+
+### c {-}
+
+```{r wages_acf, fig.cap="基于工资时间序列二次拟合的自相关图"}
+lat_acf(rstudent(wages_quad))
+```
+
+但是，自相关图（图\@ref(fig:wages_acf)）清楚地表明，我们面临着大量的自相关性，显然这是因为我们尚未考虑该时间序列中的季节性趋势。
+
+### d {-}
+
+我们也来看看正态性检验图。
+
+```{r wages-norm, fig.height=3, fig.cap="采用二次拟合的工资数据正态性检验图"}
+figa <- 
+  qqmath(rstudent(wages_quad), xlab = "理论值",
+       asp = 1,
+       ylab = "学生化残差",
+       panel = function(x, ...) {
+         panel.qqmathline(x, ...)
+         panel.qqmath(x, ...)
+       })
+
+figb <- densityplot(rstudent(wages_quad), xlab = "学生化残差",ylab="密度")
+gridExtra::grid.arrange(figa, figb, ncol = 2)
+```
+
+正态性检验图（图\@ref(fig:wages-norm)）表明，残差分布具有一定的重尾性，且略微左偏。
+
+## 3.12 重新探讨啤酒销量
+
+### a {-}
+
+首先，我们收集残差。
+
+```{r}
+# 加载数据集(beersales)
+beer_quad_seasonal <- lm(beersales ~ time(beersales) + I(time(beersales)^2) +
+                           season(beersales))
+beer_resid <- rstudent(beer_quad_seasonal)
+```
+
+### b {-}
+
+接下来，我们执行一次游程检验。
+
+```{r}
+runs(beer_resid)
+```
+
+检验结果显著（$p = `r runs(beer_resid)$pvalue`$）。
+
+### c {-}
+
+```{r beer-acf, fig.cap="啤酒销量模型的自相关图"}
+lat_acf(beer_resid)
+```
+
+因为在几个滞后期上相关性显著，这让我们质疑数据的独立性。
+
+### d {-}
+
+```{r beer-norm, fig.cap="经过线性、二次及季节性拟合后的啤酒销量时间序列正态性检验图。"}
+figa <- 
+  qqmath(beer_resid, xlab = "理论值",
+       asp = 1,
+       ylab = "学生化残差",
+       panel = function(x, ...) {
+         panel.qqmathline(x, ...)
+         panel.qqmath(x, ...)
+       })
+
+figb <- densityplot(beer_resid, xlab = "学生化残差")
+
+gridExtra::grid.arrange(figa, figb, ncol = 2)
+```
+
+## 3.13 重新探讨温尼贝戈房车数据
+
+### a {-}
+
+```{r}
+winn_resid <- rstudent(winn_fit_seasonal)
+```
+
+### b {-}
+
+```{r}
+runs(winn_resid)
+```
+
+游程检验结果显著。我们得到的游程数目少于预期。
+
+### c {-}
+
+```{r winn-acf, fig.cap="温尼贝戈房车模型的自相关图。"}
+lat_acf(winn_resid)
+```
+
+存在依赖性证据，而目前我们在模型中尚未考虑这一因素。
+
+### d {-}
+
+```{r, winn-norm, fig.height=3, fig.cap="经过对数变换和季节性拟合后温尼贝戈房车系列的正态性检验图"}
+figa <- 
+  qqmath(winn_resid, xlab = "理论值",
+       asp = 1,
+       ylab = "学生化残差",
+       panel = function(x, ...) {
+         panel.qqmathline(x, ...)
+         panel.qqmath(x, ...)
+       })
+
+figb <- densityplot(winn_resid, xlab = "学生化残差",ylab="密度")
+gridExtra::grid.arrange(figa, figb, ncol = 2)
+```
+
+存在左偏斜现象，且有一个较大的异常值，但总体上接近正态分布。

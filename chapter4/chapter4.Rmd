@@ -1,0 +1,406 @@
+---
+title: "时间序列分析第四章作业"
+author: "Phlinsia"
+date: "2024年4月3日"
+CJKmainfont: SimSun
+output:
+  bookdown::pdf_document2:
+    includes:
+        header-includes:
+          - \usepackage{xeCJK}
+          - \usepackage{subfig}
+          - \usepackage{subcaption}
+        keep_tex: yes
+    latex_engine: xelatex
+---
+
+```{r setup, echo=FALSE,include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=8, fig.height=3)
+library(showtext)
+font_families()
+showtext_auto()
+library(devtools)
+library(lattice)
+library(latticeExtra)
+library(gridExtra)
+library(TSA)
+library(pander)
+library(zoo)
+library(xts)
+set.seed(1234)
+```
+
+
+
+## 4.2 绘制自相关图
+
+### a {-}
+```{r tacf}
+tacf <- function(..., lag.max = 10) {
+  s <- ARMAacf(..., lag.max = lag.max)
+
+  lattice::xyplot(s ~ as.numeric(names(s)), type = "h",
+                  ylab = "自相关系数", xlab = "滞后阶数",
+                  panel = function(x, y, ...) {
+                    panel.abline(h = 0)
+                    panel.xyplot(x, y, ...)
+                  })
+}
+```
+
+```{r, fig.cap = "当$\\theta_1 = 0.5$且$\\theta_2 = 0.4$时的自相关图"}
+tacf(ma = list(-0.5, -0.4))
+```
+
+### b {-}
+
+```{r, fig.cap = "当$\\theta_1 = 1.2$且$\\theta_2 = -0.7$时的自相关图"}
+tacf(ma = list(-1.2, 0.7))
+```
+
+### c {-}
+
+```{r, fig.cap = "当$\\theta_1 = -1$且$\\theta_2 = -0.6$时的自相关图"}
+tacf(ma = list(1, 0.6))
+```
+
+
+## 4.4.MA(1)模型中系数非唯一性
+
+\[
+\frac{-\frac{1}{\theta}}{1 + \left( \frac{1}{\theta}\right)^2} = \frac{-\frac{1}{\theta}\times\theta^2}{\left( 1 + \frac{1}{\theta^2} \right) \theta^2} = \frac{-\theta}{1+\theta^2} 
+\]
+
+## 4.5.绘制更多的自相关图
+
+```{r autocorrelation}
+theta <- c(0.6, -0.6, 0.95, 0.3)
+lag <- c(10, 10, 20, 10)
+for (i in seq_along(theta)) {
+  print(tacf(ar = theta[i], lag.max = lag[i]))
+}
+```
+
+## 4.6.AR(1)过程的自相关函数
+
+### a {-}
+
+\[
+\begin{aligned}
+\text{Cov}(\triangledown Y_t, \triangledown Y_{t-k}) & = \text{Cov}(Y_t-Y_{t-1}, Y{t-k}-Y_{t-k-1})\\
+                                                     & = \text{Cov}(Y_t, Y_{t-k}) - \text{Cov}(Y_{t-1},Y_{t-k}) - \text{Cov}(Y_t, Y_{t-k-1}) + \text{Cov}(Y_{t-1}, Y_{t-k-1})\\
+                                                     & = \frac{\sigma_e^2}{1-\phi^2}(\phi^2 - \phi^{k-1}-\phi^{k+1}+\phi^k) \\
+                                                     & = \frac{\sigma_e^2}{1-\phi^2}\phi^{k-1}(2\phi-\phi2-1)\\
+                                                     & = - \frac{\sigma_e^2}{1-\phi^2}(1-\phi)^2\phi^{k-1}\\
+                                                     & = - \sigma_e^2 \frac{(1-\phi)^2}{(1-\phi)(1+\phi)}\\
+                                                     & = -\sigma_e^2 \frac{1-\phi}{1+\phi}\phi^{k-1}
+\end{aligned}
+\]
+
+
+### b {-}
+
+\[
+\begin{aligned}
+  \text{Var}(W_t) & = \text{Var}(Y_t-Y_{t-1})\\
+                  & = \text{Var}(\phi_1Y_{t-1}+e_t-Y_{t-1})\\
+                  & = \text{Var}(Y_{t-1}(\phi-1)+\sigma_e^2)\\
+                  & = (\phi-1)^2\text{Var}(Y_{t-1}) + \text{Var}(e_t)\\
+                  & = \frac{\sigma_e^2}{1-\phi^2}(\phi^2-2\phi+1) + \sigma_e^2\\
+                  & = \frac{\sigma_e^2(\phi^2-2\phi+1+1-\phi^2)}{1-\phi^2}\\
+                  & = \frac{2\sigma_e^2(1-\phi)}{1-\phi^2} \\
+                  & = \frac{2\sigma_e^2}{1+\phi} 
+\end{aligned}
+\]
+
+## 4.7 几种模型的特性
+
+### a {-}
+
+MA(1)仅在滞后1存在非零相关性。相关系数可正可负，但必介于-0.5和0.5之间。
+
+### b {-}
+
+MA(2)仅在滞后1和2存在非零自相关性。序列形态取决于系数的具体数值。
+
+### c {-}
+
+AR(1)从滞后0期开始指数衰减的相关性。
+
+\[
+\begin{cases}
+   \phi > 0,  \text{此时所有自相关系数均为正数;} \\
+   \phi < 0,  \text{此时自相关系数按负、正、负等规律交替出现.}
+\end{cases}
+\]
+
+### d {-}
+
+AR(2)自相关函数（ACF）具有不同的模式，取决于根是复数还是实数。
+
+### e {-}
+
+ARMA(1,1)从滞后1开始指数衰减的相关性。
+
+
+## 4.8 AR(2)模型
+
+首先，我们有方差表达式：
+\[
+ \text{Var}(Y_t) = \text{Var}(\phi_2 Y_{t-2} + e_t) = \phi_2^2 \text{Var}Y_{t-2} + \sigma_e^2
+\]
+假设平稳性，则上式等价于：
+\[
+\text{Var}(Y_{t-2}) = \phi_2^2 \text{Var}(Y_{t-2}) + \sigma_e^2 \iff \\
+\sigma_e^2 = (1-\phi_2^2) \text{Var}(Y_{t-2}) \iff \\
+\text{Var}(Y_{t-2}) = \frac{\sigma_e^2}{1-\phi^2_2}
+\]
+这个等式要求 $-1 < \phi_2 < 1$，因为 $\text{Var}(Y_{t-2})$ 必须大于等于0。
+
+## 4.9 AR(2)过程
+
+### a {-}
+
+\[
+\begin{split}
+\rho_1 & = 0.6\rho_0 + 0.3\rho_{-1} = 0.6 + 0.3\rho_1 = 0.8571 \\
+\rho_2 & = 0.6\rho_1+0.3\rho_0 = 0.81426\\
+\rho_3 & = 0.6\rho_2 + 0.3\rho_1 = 0.7457
+\end{split}
+\]
+
+特征方程的根由下式给出：
+
+\[
+\frac{\phi_1 \pm \sqrt{\phi_1^2 + 4\phi_2}}{-2\phi_2} = \frac{0.6 \pm \sqrt{0.6 + 4 \times 0.3}}{-2 \times 0.3} = -1 \pm 2.0817 = \{1.0817, -3.0817\}.
+\]
+
+由于这两个根的绝对值均大于1，它们是实数。接下来，我们绘制理论上的自相关函数(\@ref(fig:ar2a)).
+
+```{r ar2a, fig.cap = "AR(2)模型自相关函数，其中$ {\\phi}_1 = 0.6,{\\phi}_2 = 0.3$"}
+tacf(ar = c(0.6, 0.3))
+```
+
+### b {-}
+
+接下来，我们编写一个函数来完成这个任务。
+
+```{r}
+ar2solver <- function(phi1, phi2) {
+  roots <- polyroot(c(1, -phi1, -phi2))
+  cat("根:\t\t", roots, "\n")
+  
+  if (any(Im(roots) > sqrt(.Machine$double.eps))) {
+    damp <- sqrt(-phi2)
+    freq <- acos(phi1 / (2 * damp))
+    
+    cat("衰减因子:\t", damp, "\n")
+    cat("频率:\t\t", freq, "\n")
+  }
+  
+  tacf(ar = c(phi1, phi2))
+}
+```
+
+```{r, fig.cap = "AR(2)模型自相关函数，其中$\\phi_1 = -0.4, \\phi_2 = 0.5$。"}
+ar2solver(-0.4, 0.5)
+```
+
+### c {-}
+
+```{r, fig.cap = "AR(2)模型自相关函数，其中$\\phi_1 = 1.2, \\phi_2 = -0.7$。"}
+ar2solver(1.2, -0.7)
+```
+
+### d {-}
+
+```{r, fig.cap = "AR(2)模型自相关函数，其中$\\phi_1 = -1, \\phi_2 = -0.6$。"}
+ar2solver(-1, -0.6)
+```
+
+### e {-}
+
+```{r, fig.cap = "AR(2)模型自相关函数，其中$\\phi_1 = 0.5, \\phi_2 = -0.9$。"}
+ar2solver(0.5, -0.9)
+```
+
+### f {-}
+
+```{r, fig.cap = "AR(2)模型自相关函数，其中$\\phi_1 = -0.5, \\phi_2 = -0.6$。"}
+ar2solver(-0.5, -0.6)
+```
+
+
+
+## 4.10 ARMA(1,1)模型
+
+### a {-}
+
+```{r, fig.cap = "ARMA(1,1)模型自相关函数，其中$\\phi = 0.7$和$\\theta = 0.4$。"}
+tacf(ar = 0.7, ma = -0.4)
+```
+
+### b {-}
+
+```{r, fig.cap = "ARMA(1,1)模型自相关函数，其中$\\phi = 0.7$和$\\theta = 0.4$。"}
+tacf(ar = 0.7, ma = 0.4)
+```
+
+
+## 4.12.两个MA(2)过程
+
+### a {-}
+
+对于$\theta_1 = \theta_2 = \frac{1}{6}$的情况，
+
+\[ \rho_k = \frac{-\frac{1}{6}+\frac{1}{6}\times\frac{1}{6}}{1 + \left(\frac{1}{6}\right)^2 + \left(\frac{1}{6}\right)^2} = \frac{\frac{1}{6}\left(\frac{1}{6}-1\right)}{1 + \frac{2}{36}} = - \frac{5}{38}. \]
+
+而对于$\theta_1 = -1$和$\theta_2 = 6$，
+
+\[ \rho_k = \frac{1-6}{1+1^2+36} = - \frac{5}{38}. \]
+
+### b {-}
+
+对于$\theta_1 = \theta_2 = \frac{1}{6}$的情况，其特征根计算如下：
+
+\[ \frac{\frac{1}{6} \pm \sqrt{\frac{1}{36}+ 4 \times \frac{1}{6}}}{-2\times \frac{1}{6}} =
+- \frac{1}{2} \pm \frac{\sqrt{\frac{25}{36}}}{-\frac{1}{3}} = - \frac{1}{2} \pm \frac{\frac{5}{6}}{\frac{1}{3}} = \{-3, -2\} \]
+
+而当$\theta_1 = -1$和$\theta_2 = 6$时，
+
+\[ \frac{-1 \pm \sqrt{1 + 4 \times 6}}{-2\times6} = \frac{-1\pm 5}{-12} = \frac{1}{12} \pm \frac{5}{12} = \left\{-\frac{1}{3}, \frac{1}{2}\right\} \]
+
+## 4.14.零均值平稳过程
+
+我们令$Y_t=e_t-θe_{t-1}$，然后有
+
+$$
+\begin{split}
+e_t & = \sum_{j=0}^\infty \theta^j Y_{t-j} \quad \text{展开得到} \\
+    & = \sum_{j=1}^\infty \theta^j Y_{t-j} + \theta^0 Y_{t-0} \\
+    & \iff \\
+Y_t & = e_t - \sum_{j=1}^\infty \theta^j Y_{t-j}
+\end{split}
+$$
+
+这等价于
+
+\[
+Y_t = \mu_0 + (1 + \theta B + \theta^2 B^2 + \dots + \theta^n B^n)e_t
+\]
+
+这是MA(1)过程的定义式，其中$B$是滞后算子，满足$Y_t B^k = Y_{t-k}$。
+
+
+## 4.16.非平稳AR(1)过程
+
+### a {-}
+
+\[
+\begin{split}
+Y_t & = \phi Y_{t-1}+e_t \implies \\
+- \sum_{j=1}^\infty \left(\frac{1}{3}\right)^j e_{t+j}     & = 3 \left(-\sum_{j=1}^\infty \left(\frac{1}{3}\right)^j e_{t-1+j}\right) + e_t\\
+- \sum_{j=1}^\infty \left(\frac{1}{3}\right)^{j+1} e_{t+j} & = -\sum_{j=1}^\infty \left(\frac{1}{3}\right)^j e_{t-1+j} + \frac{1}{3} e_t\\
+- \sum_{j=1}^\infty \left(\frac{1}{3}\right)^{j+1} e_{t+j} & = -\sum_{j=2}^\infty \left(\frac{1}{3}\right)^j e_{t-1+j}\\
+- \sum_{j=1}^\infty \left(\frac{1}{3}\right)^{j+1} e_{t+j} & = -\sum_{j+1=2}^\infty \left(\frac{1}{3}\right)^{j+1} e_{t+j} 
+\end{split}
+\]
+
+### b {-}
+
+\[
+\text{E}(Y_t)  = \text{E}\left(\sum_{j=1}^\infty \left(\frac{1}{3}\right)^j e_{t+j}\right) = 0
+\]
+由于所有项都是不相关的白噪声。
+
+\[
+\begin{split}
+\text{Cov}(Y_t,Y_{t-1}) = \\
+\text{Cov}\left( -\sum_{j=1}^\infty \left(\frac{1}{3}\right)^j e_{t+j}, \sum_{j=1}^\infty \left(\frac{1}{3}\right)^j e_{t+j-1} \right) = \\
+\text{Cov}\left(-\frac{1}{3}e_{t+1} - \left(\frac{1}{3}\right)^2e_{t+2} - \dots - \left(\frac{1}{3}\right)^n e_{t+n},
+                -\frac{1}{3}e_{t} - \left(\frac{1}{3}\right)^2e_{t+1} - \dots - \left(\frac{1}{3}\right)^n e_{t+n-1} \right) = \\
+\text{Cov}\left(-\frac{1}{3}e_{t+1},-\frac{1}{3^2}e_{t+1}\right) +
+  \text{Cov}\left(-\frac{1}{3^2}e_{t+2},-\frac{1}{3^3}e_{t+2}\right) + \dots +
+  \text{Cov}\left(-\frac{1}{3^n}e_{t+n},-\frac{1}{3^{n+1}}e_{t+n}\right) = \\
+  \sum_{i=1}^{n}\text{Cov}\left(-\frac{1}{3^i}e_{t+i},-\frac{1}{3^{i+1}}e_{t+i}\right) =
+\sum_{i=1}^{n}\left(\text{Cov}\left(e_{t+i},e_{t+i}\right) \cdot \left(-\frac{1}{3^i}\right) \cdot \left(-\frac{1}{3^{i+1}}\right)\right)
+=\sum_{i=1}^{n} \left( \frac{1}{3^{2i+1}} \cdot \text{Var}(e_{t+i}) \right) =\sum_{i=1}^{n} \frac{\sigma_e^2}{3^{2i+1}}
+\\
+\end{split}
+\]
+这个表达式并不随时间$t$变化。
+
+### c {-}
+
+因为$Y_t$依赖于未来的观测值所以模型不令人满意。
+
+
+## 4.17.AR(1)过程
+
+### a {-}
+
+\[
+\begin{gathered}
+\frac{1}{2}\left(10\left(\frac{1}{2}\right)^{t-1} + e_{t-1} + \frac{1}{2}e_{t-2} + \left(\frac{1}{2}\right)^2e_{t-3} + \dots +
+  \left(\frac{1}{2}\right)^{n-1}e_{t-n}\right) + e_{t-1} = \\
+10 \left(\frac{1}{2}\right)^t + \frac{1}{2}e_{t-1} + \left(\frac{1}{2}\right)^2e_{t-2} + \left(\frac{1}{2}\right)^3 e_{t-3} +
+  \dots + \left( \frac{1}{2}\right)^n e_{t-n} + e_{t-1} = \\
+10\left(\frac{1}{2}\right)^{t-1} + e_{t-1} + \frac{1}{2}e_{t-2} + \left(\frac{1}{2}\right)^2e_{t-3} + \dots +
+  \left(\frac{1}{2}\right)^{n-1}e_{t-n} 
+  \end{gathered}
+\]
+
+### b {-}
+
+$\text{E}(Y_t) = 10 \left( \frac{1}{2}\right)^t$ 随着 $t$ 的变化而变化，因此是非平稳的。
+
+## 4.18.平稳的 AR(1)
+
+### a {-}
+
+\[
+\text{E}(W_t) = \text{E}(Y_t + c\phi^t) = \text{E}(Y_t) + \text{E}(c\phi^t) = 0 + c\phi^t = c\phi^t 
+\]
+
+
+### b {-}
+
+\[
+\phi(Y_{t-1}+c\phi^{t-1})+e_t = \phi Y_{t-1} + c\phi^t + e_t = \phi \left( \frac{Y_t - e_t}{\phi}\right) + c \phi^t + e_t = Y_t + c\phi^t 
+\]
+
+### c {-}
+
+不是，$\text{E}(W_t)$ 不独立于 $t$。
+
+## 4.21.隐藏的ARMA 
+
+### a {-}
+
+\[
+\begin{gathered}
+\text{Cov}(Y_t, Y_{t-k}) = \text{Cov}(e_{t-1}-e_{t-2}+0.5e_{t-3}, e_{t-1-k}-e_{t-2-k}+0.5e_{t-3-k}) = \\
+\gamma_k = \begin{cases}
+             \sigma_e^2 + \sigma_e^2 + 0.25\sigma_e^2 = 2.25\sigma_e^2 & k = 0\\
+             -\sigma_e^2-0.5\sigma_e^2=-1.5\sigma_e^2 & k = 1\\
+             0.5\sigma_e^2 & k = 2
+           \end{cases}
+\end{gathered}
+\]
+
+### b {-}
+
+从某种意义上讲，这是一个ARMA(p,q)模型，其中$p = 0$，$q = 2$，换言之实际上这是一个MA(2)过程：$Y_t = e_t - e_{t-1}+0.5e_{t-2}$，其参数为$\theta_1 = 1$，$\theta_2 = -0.5$。
+
+## 4.22.证明陈述
+
+\[
+1 - \phi_1x - \phi_2x^2 - \dots - \phi_p x^p \implies
+x^k \left( \left(\frac{1}{k}\right)^p - \phi_1 \left(\frac{1}{k}\right)^{p-1} \dots - \phi_p \right)
+\]
+
+因此，如果$x_1 = G$是上述方程的一个根，则$\frac{1}{x_1} = \frac{1}{G}$一定是以下方程的根：
+\[
+x^p - \phi_1 x^{p-1} -\phi_2 x^{p-2} - \dots -\phi_p
+\]

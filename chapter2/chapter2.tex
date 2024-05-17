@@ -1,0 +1,323 @@
+\documentclass[12pt, a4paper, oneside]{ctexart}
+\usepackage{amsmath, amsthm, amssymb, bm, color, framed, graphicx, hyperref, mathrsfs}
+\usepackage[inline]{enumitem}
+
+\title{\textbf{时间序列分析单元二练习}}
+\author{Phlins}
+\date{\today}
+\linespread{1.5}
+\definecolor{shadecolor}{RGB}{241, 241, 255}
+\newcounter{problemname}
+\newenvironment{problem}{\begin{shaded}\stepcounter{problemname}\par\noindent\textbf{题目\arabic{problemname}. }}{\end{shaded}\par}
+\newenvironment{solution}{\par\noindent\textbf{解答. }}{\par}
+\newenvironment{note}{\par\noindent\textbf{题目\arabic{problemname}的注记. }}{\par}
+
+\begin{document}
+
+\maketitle
+
+\begin{problem}
+    2.4.令${e_t}$为零均值白噪声过程,假设观测到的过程是$Y_t=e_t+\theta e_{t-1}$,其中$\theta=3 or \frac{1}{3}$
+    \begin{enumerate}[label=(\alph*)]
+        \item 求出$\theta=3 or \frac{1}{3}$时${Y_t}$的自相关函数
+        \item 无论$\theta$的值是多少，${Y_t}$都平稳.简单起见$Y_t$均值是0,方差是1,观察${Y_t}$序列在$t=1,2,\cdots,n$的值,假设可以得到对$\rho_k$较好的估计,这时根据该估计,能否确定$\theta$的值?判断理由?
+    \end{enumerate}
+\end{problem}
+
+\begin{solution}
+    \begin{gather*}
+        E[Y_t] = E[e_t+\theta e_{t-1}] = E[e_t] + \theta E[e_{t-1}] = 0 + 0 = 0\\
+        V[Y_t] = V[e_t + \theta e_{t-1}] =  V[e_t] + \theta^2 V[e_{t-1}] = \sigma_e^2 + \theta^2 \sigma_e^2 = \sigma_e^2(1 + \theta^2)\\
+    \end{gather*}
+    $k=1$时
+    \begin{gather*}
+        C[e_t + \theta e_{t-1}, e_{t-1} + \theta e_{t-2}] = \\
+        C[e_t,e_{t-1}] + C[e_t, \theta e_{t-2}] + C[\theta e_{t-1}, e_{t-1}] + C[\theta e_{t-1}, \theta e_{t-2}] = \\
+        0 + 0 + \theta V[e_{t-1}] + 0 = \theta \sigma_e^2,\\
+        \text{Corr}[Y_t, Y_{t-k}] = \frac{\theta \sigma_e^2}{\sqrt{(\sigma_e^2(1+\theta^2))^2}} = \frac{\theta }{1+\theta^2}
+      \end{gather*}
+      $k=0$时
+      \begin{gather*}
+        \text{Corr}[Y_t, Y_{t-k}] = \text{Corr}[Y_t, Y_t] = 1
+      \end{gather*}
+      $k>0$时
+      \begin{gather*}
+        C[e_t + \theta e_{t-1}, e_{t-k} + \theta e_{t-k-1}] = \\
+        C[e_t, e_{t-k}] + C[e_t, e_{t-1-k}] + C[\theta e_{t-1}, e_{t-k}] + C[\theta e_{t-1}, \theta e_{t-1-k}] = 0
+      \end{gather*}
+      考虑所有项都是独立的：
+      \begin{gather*} \text{Corr}[Y_t, Y_{t-k}] =
+        \begin{cases}
+          1                            & \quad  k = 0\\
+          \frac{\theta}{1 + \theta^2}  & \quad  k = 1\\
+          0                            & \quad  k > 1
+        \end{cases}.
+      \end{gather*}
+      即
+      \begin{gather*}
+        \text{Corr}[Y_t, Y_{t-k}] =
+        \begin{cases}
+          \frac{3}{1+3^2} = \frac{3}{10} & \quad \theta = 3\\
+          \frac{1/3}{1 + (1/3)^2} = \frac{1}{10/3} = \frac{3}{10}  & \quad \theta = 1/3
+        \end{cases}.
+      \end{gather*}
+      对于(b)
+      无法确定$\theta$，因为$\rho$已经被标准化，无论$k$的取值如何，我们都无法观察到方差的任何差异。即$\rho_k$无法推断出$\theta$的大小。
+\end{solution}
+
+
+\begin{problem}
+    2.5.假设$Y_t=5+2t+X_t$，其中$X_t$是一个均值为0平稳序列，具有自协方差函数$\gamma_k$。
+    \begin{enumerate}[label=(\alph*)]
+        \item 求${Y_t}$的均值函数
+        \item 求${Y_t}$的自协方差函数
+        \item ${Y_t}$是平稳序列吗？请证明你的结论。
+    \end{enumerate}
+\end{problem}
+\begin{solution}
+\begin{enumerate}[label=(\alph*)]
+    \item
+$$
+\mu_t = E[Y_t] = E[5 + 2t + X_t] = 5 + 2E[t] + E[X_t] = 5 + 2t + 0 = 2t + 5
+$$
+\item
+$$
+\gamma_k =\text{Cov}[Y_t,T_s]= \text{Cov}[5+2t+X_t, 5+2(t-k)+X_{t-k}] =
+  \text{Cov}[X_t, X_s]=\gamma_{|t-s|}
+  $$
+\item  
+不平稳。因为均值函数和$t$有关。%$\mu_t$是常数，自相关函数$\gamma_{t,t-k}$ 不随$t$而变。
+\end{enumerate}
+\end{solution}
+\begin{note}
+
+\end{note}
+
+\begin{problem}
+    2.6.设${X_t}$是平稳时间序列，并且定义
+    \begin{equation*}
+        Y_t=\begin{cases} &X_t \quad \text{当t是奇数时}\\&X_t+3 \quad \text{当t是偶数时} \end{cases}
+    \end{equation*}
+    \begin{enumerate}[label=(\alph*)]
+        \item 证明对所有的滞后$k$，$Cov(Y_t,Y_{t-k})$与t无关
+        \item ${Y_t}$平稳吗？请证明你的结论。
+    \end{enumerate}
+\end{problem}
+
+\begin{solution}
+\begin{enumerate}[label=(\alph*)]
+    \item
+    对于常数$a$和$b$，
+        \begin{gather*}\text{Cov}[a + X_t, b + X_{t-k}] =\text{Cov}[X_t, X_{t-k}],\end{gather*}
+    对于所有$k$都不随$t$而变，因为 $X_t$ 平稳。
+    或对应检验：
+    \begin{gather*}
+      \text{Cov}[Y_t, Y_{t-k}] 
+      \begin{cases}
+        \text{Cov}[X_t, X_{t-k}+3] & \quad t,k \text{奇} \\
+        \text{Cov}[X_t, X_{t-k}]  & \quad  t \text{奇}k \text{偶}\\
+        \text{Cov}[X_t+3, X_{t-k}]  & \quad  t \text{偶}k \text{奇}\\
+        \text{Cov}[X_t+3, X_{t-k}+3]  & \quad  t,k \text{偶}\\
+      \end{cases}
+      =\gamma_k,\text{与}t\text{无关}
+    \end{gather*}
+    \item
+    \begin{gather*}
+        \mu_t = E[Y_t] = 
+          \begin{cases}
+            E[X_t]=\mu      & \quad t \text{奇} \\
+            3 + E[X_t]=\mu+3   & \quad t \text{偶}\\
+          \end{cases}.
+      \end{gather*}
+      $\mu_t$随$t$变化，所以$Y_t$不平稳。
+\end{enumerate}
+\end{solution}
+
+\begin{problem}
+    2.7.假设${Y_t}$平稳,且有自协方差函数$\gamma_k$
+    \begin{enumerate}[label=(\alph*)]
+        \item 通过求${W_t}$的均值和自协方差函数,证明$W_t=\nabla Y_t=Y_t-Y_{t-1}$平稳
+        \item 证明：$U_t=\nabla^2 Y_t=\nabla [Y_t=Y_{t-1}]=Y_t-2Y_{t-1}+Y_{t-2}$平稳
+    \end{enumerate}
+\end{problem}
+
+\begin{solution}
+    \begin{enumerate}[label=(\alph*)]
+        \item 
+        \begin{gather*}\mu_t = E[W_t] = E[Y_t - Y_{t-1}] = E[Y_t] - E[Y_{t-1}] = 0\end{gather*}
+        因为$Y_t$稳定
+        \begin{gather*}
+          \begin{align*}
+            \text{Var}[W_t] & = \text{Cov}[W_t,W_t] =\text{Cov}[Y_t - Y_{t-1}, Y_t - Y_{t-1}] \\
+                            & = \text{Cov}[Y_t, Y_t] - \text{Cov}[Y_{t-1}, Y_{t-1}] - \text{Cov}[Y_{t}, Y_{t-1}] - \text{Cov}[Y_{t-1}, Y_{t}] \\
+                            & = 2(\gamma_0  - \gamma_{1}).
+          \end{align*}
+          \\
+          \begin{align*}
+            \text{Cov}[W_t, W_{t-k}]  & = \text{Cov}[Y_t - Y_{t-1}, Y_{t-k} - Y_{t-1-k}] \\
+                            & = \text{Cov}[Y_t, Y_{t-k}] + \text{Cov}[Y_t, Y_{t-1-k}] + \text{Cov}[-Y_{t-1}, Y_{t-k}] + \text{Cov}[-Y_{t-1}, -Y_{t-1-k}] \\
+                            & = \gamma_k - \gamma_{k+1} - \gamma_{k-1} + \gamma_k = 2\gamma_k - \gamma_{k+1} - \gamma_{k-1}.
+          \end{align*}
+          \end{gather*}
+        \item 
+        在(a)中，我们发现了两个平稳过程之间的差异，即$\nabla Y_t$本身平稳。由此可知，这些差异中的两个差异之间的差异$\nabla^2 Y_t$也平稳。
+    \end{enumerate}
+\end{solution}
+
+\begin{problem}
+    2.8.假设${Y_t}$平稳,自协方差函数是$\gamma_k$,证明对任意固定的整数$n$及任意常数$c_1,c_2,\cdots,c_n$.如下定义的过程${W_t}{W_t=c_1Y_t+c_2Y_{t-1}+\cdots+c_nY_{t-n+1}}$是平稳的
+\end{problem}
+
+\begin{solution}
+    \begin{align*}
+        E[W_t] & = c_1E[Y_t]+c_2E[Y_t] + \dots + c_n E[Y_t]\\
+               & = E[Y_t](c_1 + c_2 + \dots + c_n),
+      \end{align*}
+      因此期望值恒定。此外，
+      \begin{align*}
+        \text{Cov}[W_t] & = \text{Cov}[c_1 Y_t + c_2 Y_{t-1} + \dots + c_n Y_{t-k}, c_1 Y_{t-k} + c_2 Y_{t-k-1} + \dots + c_n Y_{t-k-n}] \\
+                        & = \sum_{i=0}^n \sum_{j=0}^n c_i c_j \text{Cov}[Y_{t-j}Y_{t-i-k}] \\
+                        & = \sum_{i=0}^n \sum_{j=0}^n c_i c_j \gamma_{j-k-i},
+      \end{align*}
+      上式与$t$无关；因此，$W_t$平稳。
+\end{solution}
+
+\begin{problem}
+    2.9.假设$Y_t=\beta_0+\beta_1 t+X_t$，其中${X_t}$是一个零均值平稳序列，具有自协方差函数$\gamma_k$，并且$\beta_0,\beta_1$是常数。
+    \begin{enumerate}[label=(\alph*)]
+        \item 证明${Y_t}$不平稳，但是$W_t=\nabla Y_t=Y_t-Y_{t-1}$平稳
+        \item 一般地，证明：如果$Y_t=\mu_t+X_t$，其中${Y_t}$是零均值平稳序列，$\mu_t$是$t$的$d$阶多项式，那么当$m\geqslant d$时，$\nabla^m Y_t=\nabla(\nabla^{m-1}Y_t)$是平稳的，而当$0\leqslant m < d$时非平稳。
+    \end{enumerate}
+\end{problem}
+
+\begin{solution}
+    \begin{enumerate}[label=(\alph*)]
+        \item 
+        \begin{gather*}
+            E[Y_t] = \beta_0 + \beta_1 t + E[X_t] = \beta_0 + \beta_1 t + \mu_{t_x},
+          \end{gather*}
+          仍和 $t$ 有关，因此$Y_t$不平稳。
+          \begin{align*}
+            E[W_t] &= E[Y_t - Y_{t-1}] = E[\beta_0 + \beta_1 t + X_t - (\beta_0 + \beta_1(t-1) + X_{t-1})] \\
+            &=\beta_0 + \beta_1 t - \beta_0 - \beta_1 t + \beta_1  = \beta_1,
+          \end{align*}
+          $E[W_t]$与 $t$ 无关，此外:
+          \begin{align*}
+            \text{Var}[W_t]&=\text{Var}[X_t,X_{t-1}]= \text{Cov}[X_t - X_{t-1}, X_t - X_{t-1}] \\
+                          &= \text{Cov}[Y_t, Y_t] - \text{Cov}[Y_{t-1}, Y_{t-1}] - \text{Cov}[Y_{t}, Y_{t-1}] - \text{Cov}[Y_{t-1}, Y_{t}]  \\
+                          &= 2(\gamma_0-\gamma_1),
+          \end{align*}
+          \begin{align*}
+            \text{Cov}[W_t, W_{t-k}] &= \text{Cov}[\beta_1+X_t - X_{t-1}, \beta_1+X_{t-k} - X_{t-1-k}] \\
+            &=2\gamma_k - \gamma_{k+1} - \gamma_{k-1}.
+          \end{align*}
+          也与 $t$ 无关，从而证明了 $W_t$ 平稳。
+          \item 
+          \begin{gather*}
+            \mu_t=a_0+a_1t+\cdots+a_dt^d\\
+            \nabla Y_t=Y_t-Y_{t-1}=(\mu_t-\mu_{t-1}) + (X_t-X_{t-1}) \\
+            \nabla \mu_t=\mu_t-\mu_{t-1}=a_1+\partial a_2t+\cdots+da_dt^{d-1}+\text{低阶项}\\
+          \end{gather*}
+          如上，一阶差分将多项数阶数降低一阶，则$m$阶差分：
+          \begin{gather*}
+            \nabla^m \mu_t=a_1+\partial a_2t+\cdots+da_dt^{d-m+1}+\text{低阶项}
+            =\begin{cases}
+              a_1 \quad & d=m\\
+              0 \quad & d<m
+            \end{cases}\\
+          \end{gather*}
+          $d\leqslant m$时，\\
+          $\because \nabla^m \mu_t$是常数$\therefore {X_t}$平稳.\\
+          $\because$差分平稳序列仍平稳\\
+          $\therefore {\nabla^m X_t}$平稳\\
+          $\therefore \nabla^m Y_t=\nabla^m X_t+\nabla^m \mu_t$平稳\\
+          $d>m$时，\\
+          $\because \nabla^m \mu_t$是$d-m$阶多项式,\\
+          $\therefore \nabla^m \mu_t=b_0+b_1t+b_{d-m}t^{d-m}$\\
+          $\therefore E[\nabla^m \mu_t]$与$t$有关\\
+          $\therefore \nabla^m \mu_t$不平稳\\
+          $\therefore \nabla^m Y_t=\nabla^m X_t+\nabla^m \mu_t$不平稳
+
+        \end{enumerate}
+\end{solution}
+
+\begin{problem}
+    2.10.设${X_t}$是零均值、单位方差的平稳过程，具有自相关系数$\rho_1$,假设$\mu_t$为非常数函数，$\sigma_t$是取值为正的非常数函数，观测序列形如$Y_t=\mu_t+\sigma_tX_t$
+    \begin{enumerate}[label=(\alph*)]
+        \item 求过程${Y_t}$的均值和自协方差函数
+        \item 证明过程${Y_t}$的自相关函数只依赖于时滞，过程${Y_t}$平稳吗？
+        \item 是否存在时间序列，其均值为常数，$\text{Corr}(Y_t,Y_{t-k})$与$t$无关。而是${Y_t}$非平稳的？
+    \end{enumerate}
+\end{problem}
+
+\begin{solution}
+    \begin{enumerate}[label=(\alph*)]
+        \item 
+        \begin{gather*}
+            \mu_t = E[Y_t] = E[\mu_t + \sigma_t X_t] = \mu_t + \sigma_t E[X_t] = \mu_t + \sigma_t \times 0 = \mu_t\\
+            \gamma_{t,t-k} = \text{Cov}[Y_t] = \text{Cov}[\mu_t + \sigma_t X_t, \mu_{t-k} + \sigma_{t-k} X_{t-k}] = 
+              \sigma_t \sigma_{t-k} \text{Cov}[X_t, X_{t-k}] = \sigma_t \sigma_{t-k} \rho_k
+          \end{gather*}
+          \item 
+          首先，我们有
+          \begin{gather*}
+            \text{Var}[Y_t] = \text{Var}[\mu_t + \sigma_t X_t] = 0 + \sigma_t^2 \text{Var}[X_t] = \sigma_t^2 \times 1 = \sigma_t^2
+          \end{gather*}
+          因为 ${X_t}$ 的方差为单位方差。此外，
+          \begin{gather*}
+            \text{Corr}[Y_t, Y_{t-k}] = \frac{\sigma_t \sigma_{t-k} \rho_k}{\sqrt{\text{Var}[Y_t]\text{Var}[Y_{t-k}]}} = 
+              \frac{\sigma_t \sigma_{t-k}\rho_k}{\sigma_t \sigma_{t-k}} = \rho_k,
+          \end{gather*}
+          只取决于时滞 $k$。然而，$Y_t$ 不一定平稳，因为 $\mu_t$ 可能与 $t$ 有关。
+          \item 
+          存在这样的时间序列，$\rho_k$ 可能与 $t$ 无关，但如果 $\sigma_t$ 不是与 $t$ 无关的话，将得到一条非平稳时间序列，其自相关性与$t$无关且均值恒定。
+    \end{enumerate}
+\end{solution}
+
+\begin{problem}
+    2.11.假设$\text{Cov}(X_t,X_{t-k})=\gamma_k$与$t$无关，而$E(X_t)=3t$
+    \begin{enumerate}[label=(\alph*)]
+        \item ${X_t}$平稳吗？
+        \item 令$Y_t=7-3t+X_t$，${Y_t}$平稳吗？
+    \end{enumerate}
+\end{problem}
+
+\begin{solution}
+    \begin{enumerate}[label=(\alph*)]
+        \item
+        \begin{gather*}
+            \text{Cov}[X_t, X_{t-k}] = \gamma_k\\
+            E[X_t] = 3t
+        \end{gather*}
+        ${X_t}$不平稳，因为$\mu_t$随$t$变化。
+        \item 
+        \begin{gather*}
+            E[Y_t] = 3 - 3t+E[X_t] = 7 - 3t - 3t = 7\\
+            \text{Cov}[Y_t, Y_{t-k}] = \text{Cov}[7-3t+X_t,7-3(t-k)+X_{t-k}] = \text{Cov}[X_t, X_{t-k}] = \gamma_k
+          \end{gather*}
+          由于${Y_t}$的均值函数是常数7，且其自协方差不随$t$变化，所以${Y_t}$平稳。
+    \end{enumerate}
+\end{solution}
+
+\begin{problem}
+  2.12.假设$Y_t=e_t-e_{t-12}$，证明：${Y_t}$平稳，并且$k>0$时，其自相关函数只在滞后$k=12$时非零。
+\end{problem}
+
+\begin{solution}
+  \begin{gather*}
+    E[Y_t] = E[e_t - e_{t-12}] = E[e_t] - E[e_{t-12}] = 0\\
+    \text{Var}[Y_t]=\text{Cov}[Y_t, Y_{t-k}] = \text{Cov}[e_t - e_{t-12}, e_{t-k} - e_{t-12-k}] =\\
+    \text{Cov}[e_t, e_{t-k}] - \text{Cov}[e_t, e_{t-12-k}] - \text{Cov}[e_{t-12}, e_{t-k}] + \text{Cov}[e_{t-12}, e_{t-12-k}]
+  \end{gather*}
+  \begin{gather*} \text{Cov}[Y_t, Y_{t-k}] =
+    \begin{cases}
+      \text{Cov}[e_t, e_{t-12}] - \text{Cov}[e_t, e_t] -\\ \text{Cov}[e_{t-12}, e_{t-12}] + \text{Cov}[e_{t-12},e_t] =\\
+        \text{Var}[e_t] - \text{Var}[e_{t-12}] \neq 0 & \quad   k=12\text{时}\\
+        \\
+      \text{Cov}[e_t, e_{t-k}] - \text{Cov}[e_t, e_{t-12-k}] -\\ \text{Cov}[e_{t-12}, e_{t-k}] + \text{Cov}[e_{t-12}, e_{t-12-k}] =\\
+      0 + 0 + 0 + 0 = 0 & \quad  k \neq 12 \text{时}
+    \end{cases}
+  \end{gather*}
+\end{solution}
+
+\end{document}
