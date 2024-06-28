@@ -1,0 +1,12 @@
+\contentsline {figure}{\numberline {1}{\ignorespaces ARIMA建模步骤}}{3}{figure.1}%
+\contentsline {figure}{\numberline {2}{\ignorespaces 苹果公司股票趋势时序图}}{4}{figure.2}%
+\contentsline {figure}{\numberline {3}{\ignorespaces 原始数据自相关图}}{6}{figure.3}%
+\contentsline {figure}{\numberline {4}{\ignorespaces 原始数据偏自相关图}}{7}{figure.4}%
+\contentsline {figure}{\numberline {5}{\ignorespaces 一阶差分时序图}}{8}{figure.5}%
+\contentsline {figure}{\numberline {6}{\ignorespaces 一阶差分自相关图}}{8}{figure.6}%
+\contentsline {figure}{\numberline {7}{\ignorespaces 一阶差分偏自相关图}}{9}{figure.7}%
+\contentsline {figure}{\numberline {8}{\ignorespaces ARIMA(1,0,2) Q-Q图}}{13}{figure.8}%
+\contentsline {figure}{\numberline {9}{\ignorespaces ARIMA(2,0,2) Q-Q图}}{13}{figure.9}%
+\contentsline {figure}{\numberline {10}{\ignorespaces 残差的自相关函数图}}{14}{figure.10}%
+\contentsline {figure}{\numberline {11}{\ignorespaces 残差的偏自相关函数图}}{14}{figure.11}%
+\contentsline {figure}{\numberline {12}{\ignorespaces 模型预测图}}{16}{figure.12}%

@@ -1,0 +1,18 @@
+\contentsline {section}{\numberline {1}背景介绍}{3}{section.1}%
+\contentsline {section}{\numberline {2}原始数据分析}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}时序图}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Augmented Dickey-Fuller (ADF) 平稳性检验}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}自相关图与偏自相关图分析}{6}{subsection.2.3}%
+\contentsline {section}{\numberline {3}平稳化处理}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}一阶差分消除趋势}{7}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}一阶差分自相关图}{8}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}一阶差分偏自相关图}{9}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}一阶差分 ADF 平稳性检验}{9}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}利用EACF确定ARIMA模型阶数}{10}{subsection.3.5}%
+\contentsline {section}{\numberline {4}建立模型}{10}{section.4}%
+\contentsline {subsection}{\numberline {4.1}模型拟合}{11}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}参数的显著性检验}{13}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}残差的正态性检验}{13}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}残差的自相关函数图和偏自相关函数图}{14}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}残差的白噪声检验}{15}{subsection.4.5}%
+\contentsline {section}{\numberline {5}模型预测}{16}{section.5}%
